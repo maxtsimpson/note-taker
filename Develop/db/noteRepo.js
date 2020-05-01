@@ -43,16 +43,23 @@ class noteRepo {
     }
 
     removeNote(noteId){
-        //this should work as long as no-one edits an note id. private properties would be good
+        //this should work as long as no-one edits a note id. private properties would be good
         let index = this.notes.findIndex(note => note.id === noteId);
         this.notes.splice(index,1)
         this.storeNotes();
     }
 
-    addNote(note){
-        //this is to add another note to the repo
-        this.notes.push(note);
+    addNote(noteDTO){
+        //this is to add another note to the repo     
+        // DTO stands for data transfer object
+        // use DTO and create note as i want the repo to be the
+        //  only place where notes are created, so i can
+        // control ID's allocated
+        let {title,text} = noteDTO;
+        let newNote = this.createNote(title,text)
+        this.notes.push(newNote);
         this.storeNotes();
+        return newNote;
     }
 
     createNote(title,text){
@@ -68,6 +75,10 @@ class noteRepo {
             if(this.notes.map(note => note.id).includes(id)){
                 id = this.getNextId();
             }
+        }
+
+        if((id === "undefined") || (typeof id !== "number")){
+            id = this.getNextId();
         }
 
         return new note(id,title,text);
