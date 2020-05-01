@@ -1,3 +1,5 @@
+// server.js
+
 // BASE SETUP
 // =============================================================================
 
@@ -27,6 +29,7 @@ router.get('/', function(req, res) {
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 app.use('/api', router);
+app.use('/', router);
 
 // START THE SERVER
 // =============================================================================
