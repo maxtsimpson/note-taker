@@ -41,3 +41,10 @@ test("can create notes", () => {
     const note = repo.createNote("dinner","nachos and a beer");
     expect(typeof (note)).toBe("object");
 });
+
+test("Can retrieve notes from mongo", () => {
+    const repo = new noteRepo();
+    notes = repo.retrieveNotesFromMongoDb();
+    console.log({notes})
+    expect(typeof (notes)).toBe("array");
+});

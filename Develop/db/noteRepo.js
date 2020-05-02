@@ -1,5 +1,6 @@
 const note = require('../Models/note');
 const fs = require("fs");
+const Mongo = require("./mongo")
 
 class noteRepo {
 
@@ -7,7 +8,10 @@ class noteRepo {
         this.notes = [];
         this.notes = this.retrieveNotes();
         this.nextId = 0;
+        this.mongo = new Mongo();
     }
+
+
 
     getNextId() {
         console.log("in getNextId");
@@ -21,6 +25,10 @@ class noteRepo {
         if (this.notes.length > 0) {
             io.writeToFile("./db.json",JSON.stringify(this.notes,undefined,2))    
         }
+    }
+
+    retrieveNotesFromMongoDb(){
+        this.notes = this.mongo.db.collection('notes').toArray();
     }
 
     retrieveNotes(){
