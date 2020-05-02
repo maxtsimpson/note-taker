@@ -9,8 +9,14 @@ test("Can instantiate noteRepo instance", () => {
 test("Can add note", () => {
     const repo = new noteRepo();
     const note = new Note("dinner","nachos and a beer");
-    repo.addNote(note);
-    expect();
+    const result = repo.addNote(note);
+    expect(typeof (result)).toBe("object");
+});
+
+test("Can get a new id", () => {
+    const repo = new noteRepo();
+    const id = repo.getNextId();
+    expect(typeof (id)).toBe("number");
 });
 
 test("Can store notes", () => {

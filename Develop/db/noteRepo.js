@@ -10,6 +10,7 @@ class noteRepo {
     }
 
     getNextId() {
+        console.log("in getNextId");
         let id = this.nextId
         this.nextId++
         return id;
@@ -28,7 +29,7 @@ class noteRepo {
             if (fs.existsSync("./db.json")) {
                 let fileContents = fs.readFileSync("./db.json");
                 let json = JSON.parse(fileContents);
-                return json.map(j => this.createnoteFromJSON(j))
+                return json.map(j => this.createNoteFromJSON(j))
             }            
         } catch (error) {
             throw error
@@ -67,7 +68,8 @@ class noteRepo {
     }
 
     createnNoteFromJSON(jsonObject){
-        
+        console.log("in createnNoteFromJSON");
+        console.log({jsonObject});
         let {id,title,text} = jsonObject
         
         //if the note array is already defined and id is already used get the next one
