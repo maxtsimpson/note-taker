@@ -11,72 +11,64 @@ class noteRepo {
     constructor() {
         this.initRepo()
         this.notes = [];
-        this.nextId = 0;
         this.repoReady = false
         this.collection = null
+        this.mongoClient = null
+        // this.timeToDropConnection = 0; //a counter to keep the connection open for x seconds but eventually drop it
     }
 
-    async initRepo(){
+    //super useful resource https://developer.mongodb.com/quickstart/node-crud-tutorial
+
+    async initRepo() {
         const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+        this.mongoClient = client
         await client.connect().then(async (client) => {
             this.collection = client.db('noteTaker').collection('notes')
+            this.nextId = this.collection.findOne({$query:{},$orderby:{_id:-1}})
+            // this.retrieveNotes();
             this.repoReady = true
             return
         }).catch((reason) => {
             throw reason
         });
+        
     }
 
-    async getNotesArrayFromMongo (){
+    async getNotesArrayFromMongo() {
         return await this.collection.find().toArray().then((notesArray) => notesArray)
     }
 
-    getNextId() {
-        let id = this.nextId
-        this.nextId++
-        return id;
+    async getNextId() {
+        // let id = this.nextId
+        // this.nextId++
+        // return id;
+
+        return await this.collection.findOne({$query:{},$orderby:{_id:-1}})
     }
 
-    // getConnection(){
-    //     console.log(`starting `)
-    //     if (this.mongoClient.isConnected()) {
-    //         console.log("client is already connected")
-    //         return new Promise((resolve,reject) => {
-    //             resolve(this.mongoClient);
-    //             reject();
-    //         })
-    //     }
-    //     console.log("new connection")
-    //     return new Promise((resolve,reject) => {
-    //         console.log("in promise")
-    //         console.log("1================")
-    //         console.log(this)
-    //         console.log("1================")
-    //         this.mongoClient.connect()
-    //         .then(() => resolve())
-    //         .catch((error) => {
-    //             reject(error);
-    //             throw error;
-    //         })
-    //         // this.mongoClient.connect((error) => {
-    //         //     if (error) {
-    //         //         // console.log("ERROR IN CONNECTION")
-    //         //         throw error
-    //         //         // reject(error);
-    //         //         // return;
-    //         //     }
-    //         //     console.log("was not an error")
-    //         //     console.log("================")
-    //         //     console.log(this)
-    //         //     console.log("================")
-    //         //     this.connection = connectedClient;
-    //         //     resolve(connectedClient);
-                
-                
-    //         // })
-    //         console.log("skipped callback")
-    //     })
-    // }
+
+
+    async ensureConnection() {
+        return new Promise((resolve, reject) => {
+            if (this.mongoClient.isConnected()) {
+                resolve();
+            } else {
+                this.mongoClient.connect()
+                .then(async (client) => {
+                    this.collection = client.db('noteTaker').collection('notes')
+                    this.repoReady = true
+                    resolve();
+                })
+                .catch((reason) => {
+                    reject(reason);
+                });
+            }
+        });
+    }
+
+    async dropConnections(){
+        return await this.mongoClient.close({force:true})
+    }
 
     // storeNotes() {
 
@@ -93,8 +85,6 @@ class noteRepo {
     // }
 
 
-
-
     retrieveNotes() {
         this.getNotesArrayFromMongo().then((notesArray) => {
             this.notes = notesArray
@@ -103,7 +93,20 @@ class noteRepo {
 
     getNotes() {
         //this is to get the notes
-        return this.notes.map(e => this.clonenote(e));
+        console.log(this.repoReady)
+        while(!this.repoReady){
+            
+        }
+        return this.notes
+        
+    }
+
+    async deleteNoteById(id){
+        result = await this.collection.deleteOne(
+            {_id: id}
+        )
+        console.log({result})
+        console.log(`${result.deletedCount} document(s) was/were deleted.`);
     }
 
     removeNote(noteId) {

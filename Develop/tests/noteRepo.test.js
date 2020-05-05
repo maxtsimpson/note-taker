@@ -13,11 +13,26 @@ const noteRepo = require("../db/noteRepo");
 //     expect(typeof (result)).toBe("object");
 // });
 
-// test("Can get a new id", () => {
-//     const repo = new noteRepo();
-//     const id = repo.getNextId();
-//     expect(typeof (id)).toBe("number");
-// });
+test("Can get a new id", () => {
+    const repo = new noteRepo();
+    const id = repo.getNextId();
+    expect(typeof (id)).toBe("number");
+
+    const repo = new noteRepo();
+    repo.initRepo()
+    .then( () => repo.getNextId())
+    .then( (id) => {
+        console.log({id})
+        expect(Array.isArray(notes))
+        repo.dropConnection()
+        .then(() => done())
+        // done()
+    })
+    .catch((error) => {
+        console.log(error)
+        done(error)
+    });
+});
 
 // test("Can store notes", () => {
 //     const repo = new noteRepo();
@@ -29,17 +44,19 @@ const noteRepo = require("../db/noteRepo");
 //     expect();
 // });
 
-test("Can get notes", () => {
+test("Can get notes", done => {
     const repo = new noteRepo();
     repo.initRepo()
     .then( () => repo.getNotesArrayFromMongo())
     .then( (notes) => {
         expect(Array.isArray(notes))
+        repo.dropConnection()
+        .then(() => done())
+        // done()
+    })
+    .catch((error) => {
+        console.log(error)
+        done(error)
     });
 });
 
-// test("can create notes", () => {
-//     const repo = new noteRepo();
-//     const note = repo.createNote("dinner","nachos and a beer");
-//     expect(typeof (note)).toBe("object");
-// });

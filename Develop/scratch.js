@@ -27,13 +27,25 @@ const mongo = require("./db/mongo")
 // console.log("past init")
 
 
+// const repo = new noteRepo();
+// console.log("about to init repo")
+// repo.initRepo()
+// .then( () => repo.getNotesArrayFromMongo())
+// .then( (notes) => {
+//     console.log({notes})
+//     process.exit();
+// });
+
 const repo = new noteRepo();
-console.log("about to init repo")
 repo.initRepo()
-.then( () => repo.getNotesArrayFromMongo())
-.then( (notes) => {
-    console.log({notes})
-    process.exit();
+.then( () => repo.getNextId())
+.then( (id) => {
+    console.log(id["_id"])
+    repo.dropConnection().then(() => console.log("dropped connections"));
+})
+.catch((error) => {
+    console.log(error)
+    done(error)
 });
 
 // repo.then()
