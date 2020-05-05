@@ -8,6 +8,7 @@ var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var addApiRoutes = require("../Develop/routes/apiRoutes")
+var addHtmlRoutes = require("../Develop/routes/htmlRoutes")
 
 const noteRepo = require("../Develop/db/noteRepo");
 
@@ -53,6 +54,7 @@ router.get('/', function(req, res) {
 // all of our routes will be prefixed with /api
 
 addApiRoutes(app,repo);
+addHtmlRoutes(app);
 
 app.use('/api', router);
 app.use('/', router);

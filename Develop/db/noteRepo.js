@@ -20,13 +20,19 @@ class noteRepo {
     //super useful resource https://developer.mongodb.com/quickstart/node-crud-tutorial
 
     async initRepo() {
+        console.log("in initRepo");
         const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
         this.mongoClient = client
+        console.log("client set, connecting");
         await client.connect().then(async (client) => {
+            console.log("connected")
             this.collection = client.db('noteTaker').collection('notes')
+            console.log("collection set about to set next id");
             this.nextId = this.collection.findOne({$query:{},$orderby:{_id:-1}})
-            // this.retrieveNotes();
+            console.log("about to retrieve notes");
+            this.retrieveNotes();
             this.repoReady = true
+            console.log("repo is ready");
             return
         }).catch((reason) => {
             throw reason
@@ -35,6 +41,8 @@ class noteRepo {
     }
 
     async getNotesArrayFromMongo() {
+        console.log("in getNotesArrayFromMongo")
+        console.log(this.collection)
         return await this.collection.find().toArray().then((notesArray) => notesArray)
     }
 
@@ -70,22 +78,37 @@ class noteRepo {
         return await this.mongoClient.close({force:true})
     }
 
-    // storeNotes() {
+    // async storeNotesArrayInMongo(){
+    //     console.log("in storeNotesArrayInMongo")
+    //     return await this.collection.updateMany(
+    //         {}
+    //         { upsert: true }
+    //     )
 
-    //     //this is to store notes to file or eventually to db
-    //     if (this.notes.length > 0) {
-    //         if (!this.mongoClient.isConnected()) {
-    //             this.mongoClient.connect().then(() => {
-    //                 console.log("connection opened");
-    //                 this.collection.insertOne()
-    //                 // this.mongoClient.db('noteTaker').collection('notes').
-    //             });
-    //         }
-    //     }
+    //     // .updateMany()
+
+    //     var bulkUpdateOps = this.notes.map((notes) => {
+    //         return {
+    //             "updateOne": {
+    //                 "filter": { "_id": doc.id },
+    //                 "update": { "$set": { "name": doc.name } },
+    //                 "upsert": true
+    //             }
+    //         };
+    //     });
     // }
+
+    storeNotes() {
+        //this is to store notes to file or eventually to db
+        console.log("in retrieveNotes")
+        this.getNotesArrayFromMongo().then((notesArray) => {
+            this.notes = notesArray
+        })
+    }
 
 
     retrieveNotes() {
+        console.log("in retrieveNotes")
         this.getNotesArrayFromMongo().then((notesArray) => {
             this.notes = notesArray
         })
@@ -109,11 +132,14 @@ class noteRepo {
         console.log(`${result.deletedCount} document(s) was/were deleted.`);
     }
 
-    removeNote(noteId) {
+    async removeNote(noteId) {
         //this should work as long as no-one edits a note id. private properties would be good
-        let index = this.notes.findIndex(note => note.id === noteId);
-        this.notes.splice(index, 1)
-        this.storeNotes();
+        console.log("in removeNote")
+        return await this.deleteNoteById(noteId).then((result) => result);
+
+        // let index = this.notes.findIndex(note => note._id === noteId);
+        // this.notes.splice(index, 1)
+        // this.storeNotes();
     }
 
     addNote(noteDTO) {
@@ -131,23 +157,6 @@ class noteRepo {
 
     createNote(title, text) {
         return new note(this.getNextId(), title, text)
-    }
-
-    createnNoteFromJSON(jsonObject) {
-        let { id, title, text } = jsonObject
-
-        //if the note array is already defined and id is already used get the next one
-        if (this.notes.length > 0) {
-            if (this.notes.map(note => note.id).includes(id)) {
-                id = this.getNextId();
-            }
-        }
-
-        if ((id === "undefined") || (typeof id !== "number")) {
-            id = this.getNextId();
-        }
-
-        return new note(id, title, text);
     }
 
 }

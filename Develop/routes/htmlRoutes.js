@@ -1,26 +1,12 @@
-function addHtmlRoutes (app,repo) {
+var path = require('path');
+module.exports = function addHtmlRoutes(app) {
 
-    // Get a list of notes
-    app.get("/html/notes", function(req, res) {
-        let notes = repo.getNotes();
-        console.log({notes})
-        return res.json(notes);
+    app.get("/notes", function (req, res) {
+        res.sendFile(path.join(__dirname, "../public/notes.html"));
     });
 
-    // add a new note
-    app.post("/html/notes", function(req, res) {
-        let note = repo.addnote(req.body);
-        return res.json(note);
-    });
-
-    //delete a note
-    app.delete("/html/notes", function(req, res) {
-        // need to get the id param from this url
-        // let noteId = 
-        let note = repo.removeNote(noteId);
-    });
-
+    // Wild card
+    app.get("/*", function (req, res) {
+        res.sendFile(path.join(__dirname, "../public/index.html"));
+    })
 }
-
-module.exports = addHtmlRoutes;
-

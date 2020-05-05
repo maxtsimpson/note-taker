@@ -15,8 +15,9 @@ function addApiRoutes (app,repo) {
 
     //delete a note
     app.delete("/api/notes/:id", async (req, res) => {
+        console.log(`id is: ${req.params.id}`)
         const message = await repo.removeNote(req.params.id)
-        .then(() => "removed note successfully");
+        .then((result) => `removed note successfully\n${result}`);
 
         res.body(message)
     });
@@ -26,5 +27,3 @@ function addApiRoutes (app,repo) {
 }
 
 module.exports = addApiRoutes;
-
-{"_id":{"$oid":"5ead092f67d270dd066e062c"},"\"dinner\"":"nachos"}
