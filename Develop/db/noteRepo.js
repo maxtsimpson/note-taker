@@ -1,99 +1,108 @@
 const note = require('../Models/note');
 const fs = require("fs");
 const Mongo = require("./mongo")
+const { MongoClient } = require('mongodb');
+const username = "max"
+const password = "fIh0SsjisQvfhMBe"
+const uri = `mongodb+srv://max:${password}@cluster0-fkwlp.mongodb.net/test?retryWrites=true&w=majority`;
 
 class noteRepo {
 
     constructor() {
+        this.initRepo()
         this.notes = [];
-        // this.notes = this.retrieveNotes();
         this.nextId = 0;
-        this.mongo = new Mongo()
-        this.mongoClient = this.mongo.createClient();
-        // console.log(mongoClient)
-        this.mongoClient.connect().then(() => {
-            console.log("connection opened");
-            this.retrieveNotesFromMongoDb().then((notesArray) => {
-                this.notes = notesArray
-                console.log(this.notes)
-            })
-
-            // let cursor = this.mongoClient.db('noteTaker').collection('notes');
-
-
-            // this.notes = this.mongoClient.db('noteTaker').collections();
-        });
-        // Mongo.openConnection(this.mongo).then(() => {
-        //     console.log("connection opened");
-        //     this.db = this.client.db('noteTaker');
-        // })
-        // this.mongo.then(() => {
-        //     this.retrieveNotesFromMongoDb().then((notesArray) => {
-        //         this.notes = notesArray
-        //         console.log(this.notes)
-        //     })
-
-        // })
-        // this.initiateMongo(this);
-        // this.dbReady = false;
+        this.repoReady = false
+        this.collection = null
     }
 
-    // initiateMongo(noteRepo){
-    //     return new Mongo()
-    // }
+    async initRepo(){
+        const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+        await client.connect().then(async (client) => {
+            this.collection = client.db('noteTaker').collection('notes')
+            this.repoReady = true
+            return
+        }).catch((reason) => {
+            throw reason
+        });
+    }
 
-    // async initiateMongo(noteRepo){
-    //     return Promise.resolve().then(noteRepo => {
-    //         noteRepo.mongo = new Mongo();
-    //     });
-    //     // console.log("in initiateMongo")
-    //     // this.mongo = new Mongo();
-    //     // this.dbReady = true
-    //     // this.mongo.listDatabases();
-    //     // console.log("db should now be ready")
-    // }
+    async getNotesArrayFromMongo (){
+        return await this.collection.find().toArray().then((notesArray) => notesArray)
+    }
 
     getNextId() {
-        console.log("in getNextId");
         let id = this.nextId
         this.nextId++
         return id;
     }
 
-    storeNotes() {
-        //this is to store notes to file or eventually to db
-        if (this.notes.length > 0) {
-            io.writeToFile("./db.json", JSON.stringify(this.notes, undefined, 2))
-        }
-    }
+    // getConnection(){
+    //     console.log(`starting `)
+    //     if (this.mongoClient.isConnected()) {
+    //         console.log("client is already connected")
+    //         return new Promise((resolve,reject) => {
+    //             resolve(this.mongoClient);
+    //             reject();
+    //         })
+    //     }
+    //     console.log("new connection")
+    //     return new Promise((resolve,reject) => {
+    //         console.log("in promise")
+    //         console.log("1================")
+    //         console.log(this)
+    //         console.log("1================")
+    //         this.mongoClient.connect()
+    //         .then(() => resolve())
+    //         .catch((error) => {
+    //             reject(error);
+    //             throw error;
+    //         })
+    //         // this.mongoClient.connect((error) => {
+    //         //     if (error) {
+    //         //         // console.log("ERROR IN CONNECTION")
+    //         //         throw error
+    //         //         // reject(error);
+    //         //         // return;
+    //         //     }
+    //         //     console.log("was not an error")
+    //         //     console.log("================")
+    //         //     console.log(this)
+    //         //     console.log("================")
+    //         //     this.connection = connectedClient;
+    //         //     resolve(connectedClient);
+                
+                
+    //         // })
+    //         console.log("skipped callback")
+    //     })
+    // }
 
-    async retrieveNotesFromMongoDb() {
-        console.log("in retrieveNotesFromMongoDb")
-        // console.log(this.mongo)
-        // console.log(this.mongo.db)
-        let cursor = this.mongoClient.db('noteTaker').collection('notes').find()
-        // let cursor = db.collection('notes')
-        console.log({cursor})
-        return await cursor.toArray();
-    }
+    // storeNotes() {
+
+    //     //this is to store notes to file or eventually to db
+    //     if (this.notes.length > 0) {
+    //         if (!this.mongoClient.isConnected()) {
+    //             this.mongoClient.connect().then(() => {
+    //                 console.log("connection opened");
+    //                 this.collection.insertOne()
+    //                 // this.mongoClient.db('noteTaker').collection('notes').
+    //             });
+    //         }
+    //     }
+    // }
+
+
+
 
     retrieveNotes() {
-        //this to get the notes from file or eventually db
-        try {
-            if (fs.existsSync("./db.json")) {
-                let fileContents = fs.readFileSync("./db.json");
-                let json = JSON.parse(fileContents);
-                return json.map(j => this.createNoteFromJSON(j))
-            }
-        } catch (error) {
-            throw error
-            return [];
-        }
+        this.getNotesArrayFromMongo().then((notesArray) => {
+            this.notes = notesArray
+        })
     }
 
     getNotes() {
         //this is to get the notes
-        this.notes = this.retrievenotes(); // get the latest copy of the notes
         return this.notes.map(e => this.clonenote(e));
     }
 
@@ -122,8 +131,6 @@ class noteRepo {
     }
 
     createnNoteFromJSON(jsonObject) {
-        console.log("in createnNoteFromJSON");
-        console.log({ jsonObject });
         let { id, title, text } = jsonObject
 
         //if the note array is already defined and id is already used get the next one
