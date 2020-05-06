@@ -9,6 +9,7 @@ var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var addApiRoutes = require("../Develop/routes/apiRoutes")
 var addHtmlRoutes = require("../Develop/routes/htmlRoutes")
+var path = require('path');
 
 const noteRepo = require("../Develop/db/noteRepo");
 
@@ -20,10 +21,12 @@ const cleanup = () => {
 }
 
 
+app.use(express.static(path.join('public')));
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(express.json());
 
 var port = process.env.PORT || 8080;        // set our port
 
@@ -42,9 +45,6 @@ router.use(function(req, res, next) {
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    
-
-
     res.json({ message: 'hooray! welcome to our api!' });   
 });
 

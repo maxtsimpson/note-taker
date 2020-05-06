@@ -9,6 +9,7 @@ function addApiRoutes (app,repo) {
 
     // add a new note
     app.post("/api/notes", function(req, res) {
+        console.log({req})
         let note = repo.addnote(req.body);
         return res.json(note);
     });

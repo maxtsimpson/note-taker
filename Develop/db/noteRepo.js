@@ -142,7 +142,7 @@ class noteRepo {
         // this.storeNotes();
     }
 
-    addNote(noteDTO) {
+    async addNote(noteDTO) {
         //this is to add another note to the repo     
         // DTO stands for data transfer object
         // use DTO and create note as i want the repo to be the
