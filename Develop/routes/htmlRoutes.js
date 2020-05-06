@@ -5,8 +5,12 @@ module.exports = function addHtmlRoutes(app) {
         res.sendFile(path.join(__dirname, "../public/notes.html"));
     });
 
+    app.get("/favicon.ico", function (req, res) {
+        //just so this chrome doesnt kill us
+    })
+
     // Wild card
-    app.get("/*", function (req, res) {
+    app.get("*", function (req, res) {
         res.sendFile(path.join(__dirname, "../public/index.html"));
     })
 }
