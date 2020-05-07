@@ -1,3 +1,5 @@
+// THIS FILE IS JUST A SCRATCH PAD FOR TESTING/PLAYING DONT MARK IT
+
 const noteRepo = require("./db/noteRepo");
 const Note = require("./Models/note");
 const mongo = require("./db/mongo")
