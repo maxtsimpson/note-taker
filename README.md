@@ -26,7 +26,9 @@ https:
 
 ## Future Improvements
 ability to edit notes
+
 fix test suite
+
 better db connection handling
 
 ## Usage
