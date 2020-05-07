@@ -8,9 +8,9 @@ function addApiRoutes (app,repo) {
     });
 
     // add a new note
-    app.post("/api/notes", function(req, res) {
+    app.post("/api/notes", async function(req, res) {
         // console.log({req})
-        let note = repo.addNote(req.body)
+        let note = await repo.addNote(req.body)
         .then((note) => note)
         .catch((error) => {throw error});
         
@@ -22,9 +22,10 @@ function addApiRoutes (app,repo) {
         console.log(`params: ${req.params}`)
         console.log(`id is: ${req.params.id}`)
         const message = await repo.removeNote(req.params.id)
-        .then((result) => `removed note successfully\n${result}`);
+        .then(result => result)
+        .catch((error) => {throw error});;
 
-        res.body(message)
+        res.json(message)
     });
 
 }
