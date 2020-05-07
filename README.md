@@ -1,6 +1,6 @@
 
 # noteTaker
-null
+an app to record and view notes!
 
 You can view the project here: https://maxtsimpson-notetaker.herokuapp.com/
 
