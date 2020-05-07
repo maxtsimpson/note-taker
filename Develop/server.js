@@ -20,8 +20,6 @@ const cleanup = () => {
     process.exit()
 }
 
-console.log(path.join(__dirname,'public'))
-
 app.use(express.static(path.join(__dirname,'public')));
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -41,7 +39,6 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {
     // do logging
-    console.log('Something is happening.');
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -67,7 +64,6 @@ app.use('/', router);
 // START THE SERVER
 // =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
 
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);

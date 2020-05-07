@@ -1,6 +1,5 @@
 const note = require('../Models/note');
 const fs = require("fs");
-const Mongo = require("./mongo")
 const { MongoClient } = require('mongodb');
 const username = "max"
 const password = "fIh0SsjisQvfhMBe"
@@ -10,29 +9,20 @@ class noteRepo {
 
     constructor() {
         this.initRepo()
-        this.notes = [];
         this.repoReady = false
         this.collection = null
         this.mongoClient = null
-        // this.timeToDropConnection = 0; //a counter to keep the connection open for x seconds but eventually drop it
     }
 
     //super useful resource https://developer.mongodb.com/quickstart/node-crud-tutorial
 
     async initRepo() {
-        console.log("in initRepo");
         const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
         this.mongoClient = client
-        console.log("client set, connecting");
         await client.connect().then(async (client) => {
-            console.log("connected")
             this.collection = client.db('noteTaker').collection('notes')
-            console.log("collection set about to set next id");
             this.nextId = this.collection.findOne({$query:{},$orderby:{_id:-1}})
-            console.log("about to retrieve notes");
-            this.retrieveNotes();
             this.repoReady = true
-            console.log("repo is ready");
             return
         }).catch((reason) => {
             throw reason
@@ -41,14 +31,11 @@ class noteRepo {
     }
 
     async getNotesArrayFromMongo() {
-        console.log("in getNotesArrayFromMongo")
-        // console.log(this.collection)
-        return await this.collection.find().toArray().then((notesArray) => notesArray)
+        return await this.collection.find().toArray()
     }
 
     async getNextId() {
-        console.log("in getNextId") //this gets the current item with the highest id in the collection then returns that id + 1
-        const maxId = await this.collection
+        const maxId = await this.collection //this gets the current item with the highest id in the collection then returns that id + 1
         .find()
         .sort({_id:-1}) // -1 is sort descending
         .limit(1)
@@ -58,9 +45,7 @@ class noteRepo {
         return (maxId + 1)
     }
 
-
-
-    async ensureConnection() {
+    async ensureConnection() { //not used. was trying to handle the db connection a bit smarter
         return new Promise((resolve, reject) => {
             if (this.mongoClient.isConnected()) {
                 resolve();
@@ -78,46 +63,29 @@ class noteRepo {
         });
     }
 
-    async dropConnections(){
+    async dropConnections(){ //not used at the moment. 
         return await this.mongoClient.close({force:true})
     }
 
-    storeNotes() {
-        //this is to store notes to file or eventually to db
-        console.log("in storeNotes")
-        this.addNoteToMongo().then((notesArray) => {
-            this.notes = notesArray
-        })
-    }
-
-    async UpdateMongoNotes(){
+    async UpdateMongoNotes(){ //not currently used. not in the scope of the homework
         return await this.collection.updateMany(this.notes)
     }
 
-    async addNoteToMongo(note){
+    async addNoteToMongo(note){ //not used
         return await this.collection.insertOne(note)
     }
 
-
-    retrieveNotes() {
-        console.log("in retrieveNotes")
-        this.getNotesArrayFromMongo().then((notesArray) => {
-            this.notes = notesArray
-        })
-    }
-
-    getNotes() {
+    async getNotes() {
         //this is to get the notes
         console.log(this.repoReady)
         while(!this.repoReady){
             //this is if it's called to soon after an initRepo. not a good solution though
         }
-        this.retrieveNotes();
+        const notes = await this.getNotesArrayFromMongo()
         //convert add an id to the notes as well, which is the same as the _id
         //because mongo uses _id as object id in its db
         //got this from url. the ... syntax must mean the spread of properties on the note object https://stackoverflow.com/questions/38922998/add-property-to-an-array-of-objects
-        return this.notes.map(note => this.addlocalId(note))
-        // return this.notes.map(note => ({ ...note, id: note._id }))
+        return notes.map(note => this.addlocalId(note))
 
     }
 
@@ -133,8 +101,6 @@ class noteRepo {
     }
 
     async removeNote(noteID) {
-        let index = this.notes.findIndex(n => n.id === noteID);
-        this.notes.splice(index,1)
         return await this.deleteNoteById(noteID)
         .then((result) => result)
         .catch((error) => {throw error});
@@ -150,8 +116,6 @@ class noteRepo {
         //also not going to prevent duplicate notes so dont need to wait for the addNoteToMongo to return, just assume it works
         let { title, text } = noteDTO;
         let newNote = await this.createNote(title, text)
-        this.notes.push(newNote);
-        console.log(this.notes)
         await this.addNoteToMongo(newNote).catch((error) => {throw error});
         return this.addlocalId(newNote);
     }
